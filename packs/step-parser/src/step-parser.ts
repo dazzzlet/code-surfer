@@ -12,6 +12,7 @@ export function parseSteps(
     title?: string;
     subtitle?: string;
     showNumbers?: boolean;
+    zoomIn?: number;
   }[]
 ) {
   if (inputSteps.length === 0) {
@@ -41,6 +42,7 @@ export function parseSteps(
     longestLineIndex: number;
     title?: string;
     subtitle?: string;
+    zoomIn?: number;
   }[] = [];
 
   steps.forEach((step, i) => {
@@ -55,6 +57,7 @@ export function parseSteps(
     });
 
     const focusString = inputSteps[i].focus;
+    const zoomIn = inputSteps[i].zoomIn;
     const prevLineKeys = allSteps[i - 1] ? allSteps[i - 1].lines : [];
     const focus = focusString
       ? parseFocus(focusString)
@@ -67,7 +70,8 @@ export function parseSteps(
       focusCount,
       longestLineIndex: getLongestLineIndex(code),
       title: inputSteps[i].title,
-      subtitle: inputSteps[i].subtitle
+      subtitle: inputSteps[i].subtitle,
+      zoomIn
     });
   });
 

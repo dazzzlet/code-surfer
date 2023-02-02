@@ -7,7 +7,8 @@ import {
   halfFadeIn,
   halfFadeOut,
   scrollToFocus,
-  scaleToFocus
+  scaleToFocus,
+  tween
 } from "./animation";
 import { Tuple } from "./tuple";
 
@@ -98,6 +99,8 @@ function CodeSurferContent({
     [stepPair, dimensions]
   );
 
+  const prevStepZoomIn = parseFloat(stepPair.prev?.zoomIn || '1');
+  const nextStepZoomIn = parseFloat(stepPair.next?.zoomIn || '1');
   const scale = scaleAnimation(t);
   const scrollTop = scrollAnimation(t);
   const verticalOrigin = dimensions
@@ -110,6 +113,8 @@ function CodeSurferContent({
   }, [scrollTop]);
 
   const unfocusedStyle = useUnfocusedStyle();
+  const zoomIn = tween(prevStepZoomIn, nextStepZoomIn, t);
+  const marginPos = (dimensions: any) => ((dimensions.containerWidth * zoomIn - dimensions.contentWidth) / 2);
 
   return (
     <Styled.Pre
@@ -130,7 +135,7 @@ function CodeSurferContent({
           width: dimensions && dimensions.contentWidth,
           margin:
             dimensions &&
-            `0 ${(dimensions.containerWidth - dimensions.contentWidth) / 2}px`,
+            `0 ${marginPos(dimensions)}px`,
           transform: `scale(${scale})`,
           transformOrigin: `center ${verticalOrigin}px`
         }}

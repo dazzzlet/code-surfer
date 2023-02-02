@@ -26,6 +26,7 @@ declare module "code-surfer-types" {
     focusCount: number;
     title?: string;
     subtitle?: string;
+    zoomIn?: string;
     dimensions?: {
       paddingTop: number;
       paddingBottom: number;

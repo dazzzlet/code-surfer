@@ -3,6 +3,7 @@ import { diffLines } from "diff";
 String.prototype.trimEnd =
   String.prototype.trimEnd ||
   function(this: string) {
+    // @ts-ignore
     if (String.prototype.trimRight) {
       return this.trimRight();
     } else {
