@@ -308,5 +308,5 @@ function getZoom(step: Maybe<Step>, dimensions: Dimensions): number | null {
   // if there are lines that are too long for the container
   const xZoom = (0.9 * containerWidth) / contentWidth;
 
-  return Math.min(yZoom, 1, xZoom) * (step.zoomIn || 1);
+  return Math.min(yZoom, 1, xZoom) * parseFloat(step.zoomIn || '1');
 }

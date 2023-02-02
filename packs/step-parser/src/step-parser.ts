@@ -12,7 +12,7 @@ export function parseSteps(
     title?: string;
     subtitle?: string;
     showNumbers?: boolean;
-    zoomIn?: number;
+    zoomIn?: string;
   }[]
 ) {
   if (inputSteps.length === 0) {
@@ -42,7 +42,7 @@ export function parseSteps(
     longestLineIndex: number;
     title?: string;
     subtitle?: string;
-    zoomIn?: number;
+    zoomIn?: string;
   }[] = [];
 
   steps.forEach((step, i) => {
