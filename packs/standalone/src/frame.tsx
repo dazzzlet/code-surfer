@@ -101,6 +101,8 @@ function CodeSurferContent({
 
   const prevStepZoomIn = parseFloat(stepPair.prev?.zoomIn || '1');
   const nextStepZoomIn = parseFloat(stepPair.next?.zoomIn || '1');
+  const prevStepZoomMove = stepPair.prev?.zoomMove || 0;
+  const nextStepZoomMove = stepPair.next?.zoomMove || 0;
   const scale = scaleAnimation(t);
   const scrollTop = scrollAnimation(t);
   const verticalOrigin = dimensions
@@ -113,8 +115,9 @@ function CodeSurferContent({
   }, [scrollTop]);
 
   const unfocusedStyle = useUnfocusedStyle();
+  const zoomMove = tween(prevStepZoomMove, nextStepZoomMove, t);
   const zoomIn = tween(prevStepZoomIn, nextStepZoomIn, t);
-  const marginPos = (dimensions: any) => ((dimensions.containerWidth * zoomIn - dimensions.contentWidth) / 2);
+  const marginPos = (dimensions: any) => ((dimensions.containerWidth * zoomIn - (dimensions.contentWidth)) / 2) - zoomMove;
 
   return (
     <Styled.Pre

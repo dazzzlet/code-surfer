@@ -6,12 +6,24 @@ import {
   StyleAnimation,
   emptyStyle,
   fadeInFocus,
-  fadeOutFocus
+  fadeOutFocus,
+  unfocus
 } from "./animation";
+import { Styled } from "@code-surfer/themes";
+
+export const parseSkipedRow = (lineIndex: number) => (rowPair: [number, number]) => {
+  for (let i = rowPair[0]; i <= rowPair[1]; i++) {
+    if (i == (lineIndex + 1)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 type Step = {
   lines: number[];
   focus: Record<number, true | number[]>;
+  skipRows: [number, number][];
 };
 
 type LineListProps = {
@@ -40,7 +52,11 @@ export function LineList({
       step.lines.map((lineKey, lineIndex) => ({
         key: lineKey,
         lineNumber: lineIndex + 1,
-        focus: step.focus[lineIndex]
+        focus: step.focus[lineIndex],
+        skipRows: step.skipRows.some(parseSkipedRow(lineIndex))
+      })).map((linePair, lineIndex, linesPair) => ({
+        ...linePair,
+        isTransition: linePair.skipRows && (lineIndex == 0 || !linesPair[lineIndex - 1].skipRows)
       }))
     );
 
@@ -73,9 +89,12 @@ export function LineList({
 
       const [prevLine, nextLine] = lineTuple.spread();
       const [prevFocus, nextFocus] = lineTuple.select(l => l.focus).spread();
+      const [prevSkipRows, nextSkipRows] = lineTuple.select(l => l.skipRows).spread();
+      // const [prevIsTransition, nextIsTransition] = lineTuple.select(l => l.isTransition).spread();
       const isMoving = !prevLine || !nextLine;
       const isChangingFocus = prevFocus !== nextFocus;
-      const isStatic = !isMoving && !isChangingFocus;
+      var isChangingSkipRows = prevSkipRows !== nextSkipRows;
+      const isStatic = !isMoving && !isChangingFocus && !isChangingSkipRows;
 
       const areTokensAnimated =
         !isStatic && (Array.isArray(prevFocus) || Array.isArray(nextFocus));
@@ -99,9 +118,20 @@ export function LineList({
       const lineNumberElement = showNumbers && (
         <span className={"token-line-number"}>{lineNumber + " "}</span>
       );
+      const hideRowClass = (t: number) => {
+        if (t % 1 > 0) {
+          if (nextLine && nextLine.isTransition && nextLine.skipRows) {
+            return 'hide-row';
+          }
+        } else if (anyLine && anyLine.skipRows) {
+          return 'hide-row';
+        }
+        return 'show-row'
+      };
 
       const lineElement = isStatic && (
-        <div
+        <Styled.CodeLine
+          className={`${hideRowClass(0)} static-row`}
           style={{
             overflow: "hidden",
             opacity: prevFocus ? undefined : offOpacity,
@@ -116,7 +146,7 @@ export function LineList({
           >
             {tokenElements}
           </div>
-        </div>
+        </Styled.CodeLine>
       );
 
       let getLineStyle: StyleAnimation = emptyStyle;
@@ -143,6 +173,32 @@ export function LineList({
             fadeOutLines.length,
             lineHeight
           );
+        } else if (!prevSkipRows && nextSkipRows) {
+          var _toOpacity = Array.isArray(prevFocus) ? 1 : 0;
+          if (!nextLine.isTransition) {
+            var fadeOutIndex = fadeOutLines.indexOf(lineKey);
+            var _fromOpacity = prevFocus ? 1 : offOpacity;
+            getLineStyle = exitLine(_fromOpacity, _toOpacity, fadeOutIndex, fadeOutLines.length, lineHeight);
+          } else {
+            var focusStyle = unfocus(offOpacity, offOpacity);
+            if (prevFocus) {
+              focusStyle = unfocus(1, _toOpacity);
+            }
+            getLineStyle = (t: number) => ({ ...focusStyle(t), height: lineHeight });
+          }
+        } else if (prevSkipRows && !nextSkipRows) {
+          var toOpacity = nextFocus ? 1 : offOpacity;
+          if (prevLine.isTransition) {
+            var focusStyle = unfocus(offOpacity, offOpacity);
+            if (prevFocus) {
+              focusStyle = unfocus(1, toOpacity);
+            }
+            getLineStyle = (t: number) => ({ ...focusStyle(t), height: lineHeight });
+          } else {
+            var fadeInIndex = fadeInLines.indexOf(lineKey);
+            var fromOpacity = Array.isArray(nextFocus) ? 1 : 0;
+            getLineStyle = enterLine(fromOpacity, toOpacity, fadeInIndex, fadeInLines.length, lineHeight);
+          }
         } else if (!prevFocus && nextFocus && !Array.isArray(nextFocus)) {
           const fadeInIndex = fadeInLines.indexOf(lineKey);
           getLineStyle = fadeInFocus(
@@ -178,17 +234,17 @@ export function LineList({
           const animation =
             fromOpacity < toOpacity
               ? fadeInFocus(
-                  fromOpacity,
-                  toOpacity,
-                  fadeInIndex,
-                  fadeInLines.length
-                )
+                fromOpacity,
+                toOpacity,
+                fadeInIndex,
+                fadeInLines.length
+              )
               : fadeOutFocus(
-                  fromOpacity,
-                  toOpacity,
-                  fadeOutIndex,
-                  fadeOutLines.length
-                );
+                fromOpacity,
+                toOpacity,
+                fadeOutIndex,
+                fadeOutLines.length
+              );
           return animation(t);
         };
       }
@@ -199,7 +255,8 @@ export function LineList({
         tokenElements,
         getLineStyle,
         getTokenStyle,
-        lineNumberElement
+        lineNumberElement,
+        hideRowClass
       };
     });
   }, [stepPair]);
@@ -213,10 +270,12 @@ export function LineList({
           tokenElements,
           getLineStyle,
           getTokenStyle,
-          lineNumberElement
+          lineNumberElement,
+          hideRowClass
         }) =>
           lineElement || (
-            <div
+            <Styled.CodeLine
+              className={hideRowClass(t)}
               style={{ overflow: "hidden", ...getLineStyle(t) }}
               key={lineKey}
             >
@@ -236,7 +295,7 @@ export function LineList({
                     </span>
                   ))}
               </div>
-            </div>
+            </Styled.CodeLine>
           )
       )}
     </React.Fragment>

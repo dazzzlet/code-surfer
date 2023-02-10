@@ -13,6 +13,7 @@ export function parseSteps(
     subtitle?: string;
     showNumbers?: boolean;
     zoomIn?: string;
+    skipRows?: string;
   }[]
 ) {
   if (inputSteps.length === 0) {
@@ -43,6 +44,8 @@ export function parseSteps(
     title?: string;
     subtitle?: string;
     zoomIn?: string;
+    zoomMove?: number;
+    skipRows: [number, number][];
   }[] = [];
 
   steps.forEach((step, i) => {
@@ -57,12 +60,26 @@ export function parseSteps(
     });
 
     const focusString = inputSteps[i].focus;
-    const zoomIn = inputSteps[i].zoomIn;
+    var zoomIn = inputSteps[i].zoomIn;
+    var zoomMove = 0;
+    if (zoomIn && /^\d+(\.\d+)?\,(\d+)$/.test(zoomIn)) {
+      zoomMove = parseInt(zoomIn.replace(/^\d+(\.\d+)?\,(\d+)$/, '$2'));
+    }
+    const filterSkipRows = (rowPair: string): boolean => {
+      return (rowPair != '') && /^\d+(:\d+)?$/.test(rowPair);
+    }
+    const parseSkipRows = (rowPair: string): [number, number] => {
+      const firstLine = rowPair.split(':')[0];
+      const lastLine = rowPair.split(':')[1] || firstLine;
+      return [parseInt(firstLine), parseInt(lastLine)];
+    }
+    const skipRows = inputSteps[i].skipRows;
+    const skipRowsList = skipRows?.split(',').filter(filterSkipRows).map(parseSkipRows) || [];
     const prevLineKeys = allSteps[i - 1] ? allSteps[i - 1].lines : [];
     const focus = focusString
       ? parseFocus(focusString)
       : getDefaultFocus(prevLineKeys, lineKeys);
-    const { focusCenter, focusCount } = getFocusSize(focus);
+    const { focusCenter, focusCount } = getFocusSize(focus, skipRowsList);
     allSteps.push({
       lines: lineKeys,
       focus,
@@ -71,7 +88,9 @@ export function parseSteps(
       longestLineIndex: getLongestLineIndex(code),
       title: inputSteps[i].title,
       subtitle: inputSteps[i].subtitle,
-      zoomIn
+      zoomIn,
+      zoomMove,
+      skipRows: skipRows?.split(',').filter(filterSkipRows).map(parseSkipRows) || []
     });
   });
 

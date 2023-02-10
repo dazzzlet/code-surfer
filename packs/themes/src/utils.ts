@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { SxStyleProp, Theme } from "theme-ui";
 
 export type CodeSurferStyles = {

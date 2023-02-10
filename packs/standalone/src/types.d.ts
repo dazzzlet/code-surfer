@@ -12,6 +12,7 @@ declare module "code-surfer-types" {
     subtitle?: string;
     lang?: string;
     showNumbers?: boolean;
+    skipRows?: string;
   }
 
   type LineKey = Flavor<number, "LineKey">;
@@ -27,6 +28,8 @@ declare module "code-surfer-types" {
     title?: string;
     subtitle?: string;
     zoomIn?: string;
+    zoomMove?: number;
+    skipRows: [number, number][];
     dimensions?: {
       paddingTop: number;
       paddingBottom: number;

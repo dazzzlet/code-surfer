@@ -75,13 +75,23 @@ function isNaturalNumber(n: any) {
   return !isNaN(n1) && n2 === n1 && n1.toString() === n;
 }
 
-export function getFocusSize(focus: Record<LineIndex, true | ColumnIndex[]>) {
+export function getFocusSize(focus: Record<LineIndex, true | ColumnIndex[]>, skipRowsList: [number, number][]) {
   const lineIndexList = Object.keys(focus).map(k => +k);
   const focusStart = Math.min.apply(Math, lineIndexList);
   const focusEnd = Math.max.apply(Math, lineIndexList);
+  const skippedList = skipRowsList.reduce((result: number[], rowPair) => {
+    for (let i = rowPair[0]; i <= rowPair[1]; i++) {
+      if (result.indexOf(i) === -1) {
+        result.push(i);
+      }
+    }
+    return result;
+  }, []).filter(line => line >= focusStart && line <= focusEnd);
+  var focusCenter = (focusStart + focusEnd + 1 - skippedList.length)/2;
+  var focusCount = focusEnd - focusStart + 1 - skippedList.length;
   return {
-    focusCenter: (focusStart + focusEnd + 1) / 2,
-    focusCount: focusEnd - focusStart + 1
+    focusCenter,
+    focusCount
   };
 }
 

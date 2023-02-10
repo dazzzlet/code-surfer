@@ -1,5 +1,7 @@
+// @ts-nocheck
 /** @jsx jsx */
 import { ThemeProvider, jsx, useThemeUI, SxStyleProp } from "theme-ui";
+import { css } from "@theme-ui/css";
 import { theme as baseTheme } from "./theme.base";
 import { CodeSurferTheme, CodeSurferStyles } from "./utils";
 import React from "react";
@@ -76,6 +78,22 @@ const baseSubtitle: SxStyleProp = {
   textAlign: "center"
 };
 
+const baseCodeLine: any = css({
+  "&.hide-row": {
+    display: "none"
+  },
+  "&.show-row+.hide-row": {
+    display: "block",
+    "::before": {
+      content: `"..."`,
+      display: "block",
+      background: "#ffa50077",
+      width: "3em",
+      borderRadius: "0 0.3em 0.3em 0",
+    }
+  },
+})();
+
 type HTMLProps<T> = React.DetailedHTMLProps<React.HTMLAttributes<T>, T>;
 
 const Styled = {
@@ -103,6 +121,9 @@ const Styled = {
   ),
   Subtitle: (props: HTMLProps<HTMLParagraphElement>) => (
     <p {...props} sx={{ ...baseSubtitle, ...useStyles().subtitle }} />
+  ),
+  CodeLine: (props: HTMLProps<HTMLParagraphElement>) => (
+    <div {...props} sx={{ ...baseCodeLine, ...useStyles().codeLine }} />
   )
 };
 

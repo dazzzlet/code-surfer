@@ -65,8 +65,23 @@ function getStepDimensions(container: HTMLElement, step: Step) {
   const containerParent = container.parentElement as HTMLElement;
   const title = container.querySelector(".cs-title") as HTMLElement;
   const subtitle = container.querySelector(".cs-subtitle") as HTMLElement;
+  const skipedRows = step.skipRows.reduce((result: number[], rowPair) => {
+    for (let i = rowPair[0]; i <= rowPair[1]; i++) {
+      if (result.indexOf(i) === -1) {
+        result.push(i);
+      }
+    }
+    return result;
+  }, []);
 
   const lineCount = step.lines.length;
+  const skipedLineCount = skipedRows.length;
+  const transitionLineCount = skipedRows.sort(
+    (a, b) => a - b
+  ).reduce(
+    (result, line, index, array) => result + (((line - 1) == array[index - 1]) ? 0 : 1)
+    , 0
+  )
   const heightOverflow =
     containerParent.scrollHeight - containerParent.clientHeight;
   const avaliableHeight = container.scrollHeight - heightOverflow;
@@ -75,7 +90,7 @@ function getStepDimensions(container: HTMLElement, step: Step) {
   const paddingTop = title ? outerHeight(title) : lineHeight;
   const paddingBottom = subtitle ? outerHeight(subtitle) : lineHeight;
 
-  const codeHeight = lineCount * lineHeight * 2;
+  const codeHeight = (lineCount - skipedLineCount + transitionLineCount) * lineHeight * 2;
   // const maxContentHeight = codeHeight + paddingTop + paddingBottom;
   // const containerHeight = Math.min(maxContentHeight, avaliableHeight);
   const containerHeight = avaliableHeight;
@@ -91,7 +106,8 @@ function getStepDimensions(container: HTMLElement, step: Step) {
     paddingTop,
     paddingBottom,
     containerHeight,
-    containerWidth
+    containerWidth,
+    skipedRows
   };
 }
 
