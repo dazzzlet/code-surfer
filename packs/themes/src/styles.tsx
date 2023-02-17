@@ -82,7 +82,7 @@ const baseCodeLine: any = css({
   "&.hide-row": {
     display: "none"
   },
-  "&.show-row+.hide-row": {
+  "&.hide-row.transition-row": {
     display: "block",
     "::before": {
       content: `"..."`,

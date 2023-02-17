@@ -121,9 +121,15 @@ export function LineList({
       const hideRowClass = (t: number) => {
         if (t % 1 > 0) {
           if (nextLine && nextLine.isTransition && nextLine.skipRows) {
+            if (nextLine.isTransition) {
+              return 'hide-row transition-row';
+            }
             return 'hide-row';
           }
         } else if (anyLine && anyLine.skipRows) {
+          if (anyLine.isTransition) {
+            return 'hide-row transition-row';
+          }
           return 'hide-row';
         }
         return 'show-row'

@@ -86,9 +86,11 @@ export function getFocusSize(focus: Record<LineIndex, true | ColumnIndex[]>, ski
       }
     }
     return result;
-  }, []).filter(line => line >= focusStart && line <= focusEnd);
-  var focusCenter = (focusStart + focusEnd + 1 - skippedList.length)/2;
-  var focusCount = focusEnd - focusStart + 1 - skippedList.length;
+  }, []);
+  const innerSkippedList = skippedList.filter(line => line >= (focusStart + 1) && line <= (focusEnd + 1));
+  const upperSkippedList = skippedList.filter(line => line < (focusStart + 1));
+  var focusCenter = ((focusStart + focusEnd + 1 - innerSkippedList.length) / 2) - upperSkippedList.length;
+  var focusCount = focusEnd - focusStart + 1 - innerSkippedList.length;
   return {
     focusCenter,
     focusCount
